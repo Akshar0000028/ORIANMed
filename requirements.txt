@@ -5,7 +5,8 @@ python-dotenv==1.0.1
 jinja2==3.1.4
 python-multipart==0.0.12
 pydantic==2.8.2
+pydantic-core==2.20.1
 sqlalchemy==2.0.36
 psycopg2-binary==2.9.10
-qdrant-client[fastembed]
-fastembed
+qdrant-client==1.12.1
+fastembed==0.3.6
