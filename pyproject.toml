@@ -1,0 +1,23 @@
+[tool.poetry]
+name = "orianmed"
+version = "0.1.0"
+description = "ORIANMed AI Medical Assistant"
+authors = ["Akshar"]
+
+[tool.poetry.dependencies]
+python = ">=3.11,<3.13"
+fastapi = "0.115.0"
+uvicorn = "0.30.6"
+httpx = "0.27.0"
+python-dotenv = "1.0.1"
+jinja2 = "3.1.4"
+python-multipart = "0.0.12"
+pydantic = "2.10.6"
+sqlalchemy = "2.0.36"
+psycopg2-binary = "2.9.10"
+qdrant-client = "1.12.1"
+fastembed = "0.3.6"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
