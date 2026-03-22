@@ -1,8 +1,10 @@
 .env
-venv/
 __pycache__/
 *.pyc
-*.db
-.DS_Store
+.venv/
+venv/
 *.egg-info/
+.DS_Store
+*.db
 orianmed.db
+.python-version
