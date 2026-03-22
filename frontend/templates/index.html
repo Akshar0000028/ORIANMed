@@ -1,0 +1,318 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>ORIANMed</title>
+  <style>
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+    body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#f5f5f0;height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center}
+    .app{width:100%;max-width:720px;height:100vh;display:flex;flex-direction:column;background:#fff;border-left:1px solid #e5e5e0;border-right:1px solid #e5e5e0}
+    .header{padding:14px 20px;border-bottom:1px solid #e5e5e0;display:flex;align-items:center;gap:12px}
+    .logo{width:34px;height:34px;background:#E1F5EE;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:18px;font-weight:700;color:#0F6E56}
+    .header-text h1{font-size:15px;font-weight:600;color:#1a1a1a}
+    .header-text p{font-size:11px;color:#888;margin-top:1px}
+    .sdot{width:8px;height:8px;border-radius:50%;background:#aaa;margin-left:auto;flex-shrink:0}
+    .slabel{font-size:11px;color:#aaa;margin-left:4px}
+    /* Profile modal */
+    .modal-bg{position:absolute;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.4);display:flex;align-items:center;justify-content:center;z-index:100}
+    .modal{background:#fff;border-radius:16px;padding:24px;width:90%;max-width:400px;display:flex;flex-direction:column;gap:14px}
+    .modal h2{font-size:16px;font-weight:600;color:#1a1a1a}
+    .modal p{font-size:13px;color:#888;margin-top:-8px}
+    .field{display:flex;flex-direction:column;gap:5px}
+    .field label{font-size:12px;font-weight:500;color:#555}
+    .field input,.field select{border:1px solid #e5e5e0;border-radius:8px;padding:8px 12px;font-size:13px;outline:none;font-family:inherit;background:#fafaf8}
+    .field input:focus,.field select:focus{border-color:#1D9E75}
+    .modal-btn{background:#0F6E56;color:#fff;border:none;border-radius:10px;padding:11px;font-size:14px;font-weight:500;cursor:pointer;transition:background .15s}
+    .modal-btn:hover{background:#1D9E75}
+    /* Chat */
+    .chat-area{flex:1;overflow-y:auto;padding:20px 20px 8px;display:flex;flex-direction:column;gap:14px}
+    .message{display:flex;gap:10px;max-width:90%}
+    .message.user{align-self:flex-end;flex-direction:row-reverse}
+    .message.assistant{align-self:flex-start}
+    .avatar{width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:600;flex-shrink:0}
+    .avatar.ai{background:#E1F5EE;color:#0F6E56}
+    .avatar.usr{background:#EEEDFE;color:#534AB7}
+    .bcol{display:flex;flex-direction:column;max-width:100%}
+    .bubble{padding:10px 14px;border-radius:16px;font-size:14px;line-height:1.6;color:#1a1a1a;word-break:break-word}
+    .message.assistant .bubble{background:#f5f5f0;border-radius:4px 16px 16px 16px}
+    .message.user .bubble{background:#0F6E56;color:#fff;border-radius:16px 4px 16px 16px}
+    .bubble.error{background:#FCEBEB;color:#7A1A1A;font-size:12px;font-family:monospace;white-space:pre-wrap;border:1px solid #F09595;border-radius:8px}
+    .meta{display:flex;gap:8px;align-items:center;margin-top:4px;padding-left:2px}
+    .bpill{font-size:10px;color:#1D9E75;font-weight:500}
+    .conf-bar{height:3px;border-radius:2px;flex:1;max-width:60px;background:#e5e5e0;overflow:hidden}
+    .conf-fill{height:100%;border-radius:2px;transition:width .3s}
+    .conf-label{font-size:10px;color:#aaa}
+    .emergency{background:#FCEBEB;border:1px solid #F09595;border-radius:10px;padding:12px 16px;font-size:13px;color:#A32D2D;font-weight:500;display:none;align-items:center;gap:10px;margin:0 16px}
+    .emergency.show{display:flex}
+    .pulse{width:8px;height:8px;border-radius:50%;background:#E24B4A;flex-shrink:0;animation:pulse 1s ease-in-out infinite}
+    @keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
+    .typing{display:flex;gap:4px;padding:12px 14px;align-items:center}
+    .typing span{width:6px;height:6px;border-radius:50%;background:#aaa;animation:bounce 1.2s infinite}
+    .typing span:nth-child(2){animation-delay:.2s}
+    .typing span:nth-child(3){animation-delay:.4s}
+    @keyframes bounce{0%,60%,100%{transform:translateY(0)}30%{transform:translateY(-6px)}}
+    .disclaimer{font-size:11px;color:#ccc;text-align:center;padding:4px 20px}
+    .suggestions{padding:0 20px 8px;display:flex;flex-wrap:wrap;gap:7px}
+    .chip{font-size:12px;color:#0F6E56;border:1px solid #9FE1CB;border-radius:20px;padding:4px 11px;cursor:pointer;background:#E1F5EE;transition:background .15s}
+    .chip:hover{background:#9FE1CB}
+    .input-area{padding:10px 16px 18px;border-top:1px solid #e5e5e0;display:flex;gap:10px;align-items:flex-end}
+    textarea{flex:1;border:1px solid #e5e5e0;border-radius:12px;padding:10px 14px;font-size:14px;font-family:inherit;resize:none;outline:none;line-height:1.5;max-height:120px;color:#1a1a1a;background:#fafaf8;transition:border-color .15s}
+    textarea:focus{border-color:#1D9E75;background:#fff}
+    textarea::placeholder{color:#bbb}
+    #send{width:38px;height:38px;border-radius:50%;background:#0F6E56;border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:background .15s,transform .1s}
+    #send:hover{background:#1D9E75}
+    #send:active{transform:scale(.95)}
+    #send svg{width:15px;height:15px;fill:white}
+    #send:disabled{background:#ccc;cursor:not-allowed}
+  </style>
+</head>
+<body>
+<div class="app" id="app" style="position:relative">
+
+  <div class="header">
+    <div class="logo">+</div>
+    <div class="header-text">
+      <h1>ORIANMed</h1>
+      <p id="phase-label">AI Medical Assistant — Phase 2</p>
+    </div>
+    <div class="sdot" id="sdot"></div>
+    <span class="slabel" id="slabel">connecting...</span>
+  </div>
+
+  <!-- Patient profile modal -->
+  <div class="modal-bg" id="modalBg">
+    <div class="modal">
+      <h2>Welcome to ORIANMed</h2>
+      <p>Tell us a bit about yourself so we can personalize your care.</p>
+      <div class="field">
+        <label>Your name *</label>
+        <input id="pName" placeholder="e.g. Arjun" required/>
+      </div>
+      <div class="field">
+        <label>Age</label>
+        <input id="pAge" type="number" placeholder="e.g. 28" min="1" max="120"/>
+      </div>
+      <div class="field">
+        <label>Gender</label>
+        <select id="pGender">
+          <option value="">Prefer not to say</option>
+          <option value="male">Male</option>
+          <option value="female">Female</option>
+          <option value="other">Other</option>
+        </select>
+      </div>
+      <div class="field">
+        <label>Existing conditions (optional)</label>
+        <input id="pConditions" placeholder="e.g. diabetes, hypertension"/>
+      </div>
+      <button class="modal-btn" onclick="createPatient()">Start consultation</button>
+    </div>
+  </div>
+
+  <div class="emergency" id="emergBanner">
+    <div class="pulse"></div>
+    <span>Emergency detected — call <strong>112 / 911</strong> immediately.</span>
+  </div>
+
+  <div class="chat-area" id="chatArea"></div>
+
+  <div class="disclaimer">Not a substitute for professional medical advice. Always consult a doctor.</div>
+
+  <div class="suggestions" id="sugg">
+    <div class="chip" onclick="useSugg('I have a headache and fever')">Headache + fever</div>
+    <div class="chip" onclick="useSugg('My throat is sore and I feel tired')">Sore throat</div>
+    <div class="chip" onclick="useSugg('I have stomach pain')">Stomach pain</div>
+    <div class="chip" onclick="useSugg('I feel dizzy and nauseous')">Dizziness</div>
+  </div>
+
+  <div class="input-area">
+    <textarea id="userInput" placeholder="Describe your symptoms..." rows="1"
+      onkeydown="handleKey(event)" oninput="resize(this)" disabled></textarea>
+    <button id="send" onclick="sendMsg()" disabled>
+      <svg viewBox="0 0 24 24"><path d="M2 21l21-9L2 3v7l15 2-15 2z"/></svg>
+    </button>
+  </div>
+</div>
+
+<script>
+const chatArea = document.getElementById('chatArea');
+const inp      = document.getElementById('userInput');
+const btn      = document.getElementById('send');
+const emerg    = document.getElementById('emergBanner');
+const sugg     = document.getElementById('sugg');
+const sdot     = document.getElementById('sdot');
+const slabel   = document.getElementById('slabel');
+const modalBg  = document.getElementById('modalBg');
+
+let history    = [];
+let sessionId  = null;
+let patientId  = null;
+let patientName = 'there';
+
+// ── Health check ──────────────────────────────────────────────────────────────
+fetch('/health').then(r=>r.json()).then(d=>{
+  const ok = d.nvidia_key_valid || d.groq_key_set;
+  sdot.style.background = ok ? '#1D9E75' : '#E24B4A';
+  slabel.style.color    = ok ? '#1D9E75' : '#E24B4A';
+  slabel.textContent    = ok ? 'Online' : 'No API key';
+}).catch(()=>{
+  slabel.textContent = 'Offline';
+  sdot.style.background = '#E24B4A';
+});
+
+// ── Patient profile ───────────────────────────────────────────────────────────
+async function createPatient() {
+  const name = document.getElementById('pName').value.trim();
+  if (!name) { alert('Please enter your name'); return; }
+
+  const payload = {
+    name,
+    age:        parseInt(document.getElementById('pAge').value) || null,
+    gender:     document.getElementById('pGender').value || null,
+    conditions: document.getElementById('pConditions').value.trim() || null,
+  };
+
+  try {
+    const r    = await fetch('/patients', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(payload) });
+    const data = await r.json();
+    patientId   = data.patient_id;
+    patientName = data.name;
+  } catch(e) {
+    console.error('Patient create failed:', e);
+  }
+
+  modalBg.style.display = 'none';
+  inp.disabled = false;
+  btn.disabled = false;
+  inp.focus();
+
+  addMsg('assistant',
+    `Hello ${patientName}! I'm ORIANMed, your AI medical assistant.\n\n` +
+    `I have your profile saved — I'll remember our conversation and personalize my responses for you.\n\n` +
+    `What symptoms are you experiencing today?`
+  );
+}
+
+// ── Utilities ─────────────────────────────────────────────────────────────────
+function resize(el){ el.style.height='auto'; el.style.height=Math.min(el.scrollHeight,120)+'px'; }
+function handleKey(e){ if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();sendMsg();} }
+function useSugg(t){ inp.value=t; sugg.style.display='none'; sendMsg(); }
+function esc(s){ return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+
+function confColor(c){
+  if(c >= 0.8) return '#1D9E75';
+  if(c >= 0.6) return '#EF9F27';
+  return '#E24B4A';
+}
+
+function addMsg(role, content, isError=false, meta={}){
+  const wrap = document.createElement('div');
+  wrap.className = `message ${role==='user'?'user':'assistant'}`;
+
+  const av = document.createElement('div');
+  av.className = `avatar ${role==='user'?'usr':'ai'}`;
+  av.textContent = role==='user'?'You':'O';
+
+  const col = document.createElement('div');
+  col.className = 'bcol';
+
+  const bub = document.createElement('div');
+  bub.className = 'bubble'+(isError?' error':'');
+  bub.innerHTML = esc(content).replace(/\n/g,'<br>').replace(/\*\*(.*?)\*\*/g,'<strong>$1</strong>');
+  col.appendChild(bub);
+
+  // Meta row — confidence + backend
+  if(role==='assistant' && !isError && meta.backend && meta.backend !== 'none'){
+    const metaRow = document.createElement('div');
+    metaRow.className = 'meta';
+
+    const pill = document.createElement('span');
+    pill.className = 'bpill';
+    pill.textContent = 'via ' + meta.backend;
+    metaRow.appendChild(pill);
+
+    if(meta.confidence !== undefined){
+      const bar = document.createElement('div');
+      bar.className = 'conf-bar';
+      const fill = document.createElement('div');
+      fill.className = 'conf-fill';
+      fill.style.width  = (meta.confidence * 100) + '%';
+      fill.style.background = confColor(meta.confidence);
+      bar.appendChild(fill);
+      metaRow.appendChild(bar);
+
+      const lbl = document.createElement('span');
+      lbl.className = 'conf-label';
+      lbl.textContent = Math.round(meta.confidence * 100) + '% confidence';
+      metaRow.appendChild(lbl);
+    }
+    col.appendChild(metaRow);
+  }
+
+  wrap.appendChild(av);
+  wrap.appendChild(col);
+  chatArea.appendChild(wrap);
+  chatArea.scrollTop = chatArea.scrollHeight;
+}
+
+function showTyping(){
+  const w=document.createElement('div'); w.className='message assistant'; w.id='typing';
+  const av=document.createElement('div'); av.className='avatar ai'; av.textContent='O';
+  const b=document.createElement('div'); b.className='bubble typing';
+  b.innerHTML='<span></span><span></span><span></span>';
+  w.appendChild(av); w.appendChild(b);
+  chatArea.appendChild(w); chatArea.scrollTop=chatArea.scrollHeight;
+}
+function removeTyping(){ const t=document.getElementById('typing'); if(t)t.remove(); }
+
+// ── Send ──────────────────────────────────────────────────────────────────────
+async function sendMsg(){
+  const text = inp.value.trim();
+  if(!text || btn.disabled) return;
+  sugg.style.display='none';
+  inp.value=''; inp.style.height='auto';
+  btn.disabled = true;
+
+  addMsg('user', text);
+  history.push({role:'user', content:text});
+  showTyping();
+
+  try {
+    const res  = await fetch('/chat',{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({ messages:history, session_id:sessionId, patient_id:patientId })
+    });
+    const raw  = await res.text();
+    removeTyping();
+
+    let data;
+    try { data = JSON.parse(raw); }
+    catch(e){ addMsg('assistant','Server error:\n\n'+raw,true); btn.disabled=false; inp.focus(); return; }
+
+    if(!res.ok){ addMsg('assistant','HTTP '+res.status+':\n\n'+(data.detail||raw),true); btn.disabled=false; inp.focus(); return; }
+
+    if(data.session_id) sessionId = data.session_id;
+    if(data.is_emergency) emerg.classList.add('show');
+
+    const failed = data.backend_used === 'none';
+    addMsg('assistant', data.reply, failed, {
+      backend:    data.backend_used,
+      confidence: data.confidence,
+    });
+
+    if(!failed){
+      history.push({role:'assistant', content:data.reply});
+    }
+
+  } catch(e){
+    removeTyping();
+    addMsg('assistant','Network error: '+e.message+'\n\nIs uvicorn running?',true);
+  }
+
+  btn.disabled=false; inp.focus();
+}
+</script>
+</body>
+</html>
